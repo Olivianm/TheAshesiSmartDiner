@@ -1,10 +1,10 @@
 
 <?php
 // Define database connection parameters
-$SERVER = 'localhost';
-$USERNAME = 'root';
-$PASSWORD = '';
-$DB_NAME = 'ashesismartdiner';
+$host = "localhost";
+$user = "phpmyadmin";
+$password = "P2litmaG";
+$dbname = "ashesismartdiner";
 
 // Create connection
 $connection = new mysqli($SERVER, $USERNAME, $PASSWORD, $DB_NAME);

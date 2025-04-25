@@ -2,9 +2,9 @@
 session_start();
 
 // Database Connection
-$servername = "localhost";
-$username = "root"; // Change if needed
-$password = ""; // Change if using a password
+$host = "localhost";
+$user = "phpmyadmin";
+$password = "P2litmaG";
 $dbname = "ashesismartdiner";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
