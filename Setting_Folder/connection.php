@@ -1,8 +1,8 @@
 <?php
 // Define database connection parameters
 $host = "localhost";
-$user = "root";
-$password = "";
+$user = "phpmyadmin";
+$password = "P2litmaG";
 $dbname = "ashesismartdiner";
 
 // Create connection
