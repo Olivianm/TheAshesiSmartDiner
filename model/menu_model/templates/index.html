@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Prediction</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #722F37;
+        }
+        .btn-primary {
+            background-color: #722F37;
+            border-color: #722F37;
+        }
+        .btn-primary:hover {
+            background-color: #5a1f26;
+            border-color: #5a1f26;
+        }
+        .alert {
+            display: none;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="text-center">Meal Prediction</h1>
+        <p class="text-center text-muted">Select a cafeteria, day, and meal period to predict the most likely product.</p>
+
+        <form id="prediction-form">
+            <div class="form-group">
+                <label for="cafreteria"><strong>Cafeteria</strong></label>
+                <select name="cafreteria" class="form-control" id="cafreteria" required>
+                    <option value="" disabled selected>Select a cafeteria</option>
+                    <option value="Akorno Services Ltd - Main Cafe">Akorno Services Ltd - Main Cafe</option>
+                    <option value="Hallmark">Hallmark</option>
+                    <option value="Munchies Services Ltd">Munchies Services Ltd</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="day_of_week"><strong>Day of the Week</strong></label>
+                <select name="day_of_week" class="form-control" id="day_of_week" required>
+                    <option value="" disabled selected>Select a day</option>
+                    <option value="Monday">Monday</option>
+                    <option value="Tuesday">Tuesday</option>
+                    <option value="Wednesday">Wednesday</option>
+                    <option value="Thursday">Thursday</option>
+                    <option value="Friday">Friday</option>
+                    <option value="Saturday">Saturday</option>
+                    <option value="Sunday">Sunday</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="meal_period"><strong>Meal Period</strong></label>
+                <select name="meal_period" class="form-control" id="meal_period" required>
+                    <option value="" disabled selected>Select a meal period</option>
+                    <option value="Breakfast">Breakfast</option>
+                    <option value="Lunch">Lunch</option>
+                    <option value="Dinner">Dinner</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Predict Meal</button>
+        </form>
+
+        <div id="prediction-output" class="alert alert-info text-center"></div>
+        <div id="error-output" class="alert alert-danger text-center"></div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $("#prediction-form").on("submit", function(event) {
+                event.preventDefault();  // Prevent form submission
+
+                $.ajax({
+                    url: "http://127.0.0.1:5000/predict",  
+                    type: "POST",
+                    data: $(this).serialize(),
+                    dataType: "json",
+                    success: function(response) {
+                        if (response.error) {
+                            $("#error-output").text(response.error).show();
+                            $("#prediction-output").hide();
+                        } else {
+                            let predictionsList = "<strong>Predicted Meals:</strong><ul>";
+                            response.predictions.forEach(meal => {
+                                predictionsList += `<li>${meal}</li>`;
+                            });
+                            predictionsList += "</ul>";
+
+                            $("#prediction-output").html(predictionsList).show();
+                            $("#error-output").hide();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        $("#error-output").html("<p>Error: " + xhr.responseText + "</p>").show();
+                        $("#prediction-output").hide();
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
