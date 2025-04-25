@@ -9,7 +9,7 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 -- Table structure for `ai_recommendations`
-CREATE TABLE `ai_recommendations` (
+CREATE TABLE IF NOT EXISTS `ai_recommendation` (
   `rec_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) DEFAULT NULL,
   `item_id` int(11) DEFAULT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE `ai_recommendations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Table structure for `cart`
-CREATE TABLE `cart` (
+CREATE TABLE IF NOT EXISTS `cart` (
   `cart_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `item_id` int(11) NOT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE `cart` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Table structure for `categories`
-CREATE TABLE `categories` (
+CREATE TABLE IF NOT EXISTS `categories` (
   `category_id` int(11) NOT NULL AUTO_INCREMENT,
   `category_name` varchar(50) NOT NULL,
   PRIMARY KEY (`category_id`),
@@ -41,7 +41,7 @@ CREATE TABLE `categories` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Table structure for `help_topics`
-CREATE TABLE `help_topics` (
+CREATE TABLE IF NOT EXISTS `help_topics` (
   `topic_id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
   `content` text NOT NULL,
@@ -50,7 +50,7 @@ CREATE TABLE `help_topics` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Table structure for `meal_plan_accounts`
-CREATE TABLE `meal_plan_accounts` (
+CREATE TABLE IF NOT EXISTS `meal_plan_accounts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `balance` decimal(10,2) NOT NULL DEFAULT 0.00,
@@ -60,7 +60,7 @@ CREATE TABLE `meal_plan_accounts` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Table structure for `menu`
-CREATE TABLE `menu` (
+CREATE TABLE IF NOT EXISTS `menu` (
   `item_id` int(11) NOT NULL AUTO_INCREMENT,
   `item_name` varchar(100) DEFAULT NULL,
   `description` text DEFAULT NULL,
@@ -73,7 +73,7 @@ CREATE TABLE `menu` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Table structure for `notifications`
-CREATE TABLE `notifications` (
+CREATE TABLE IF NOT EXISTS `notifications` (
   `notification_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) DEFAULT NULL,
   `message` text DEFAULT NULL,
@@ -85,7 +85,7 @@ CREATE TABLE `notifications` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Table structure for `orders`
-CREATE TABLE `orders` (
+CREATE TABLE IF NOT EXISTS `orders` (
   `order_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) DEFAULT NULL,
   `order_date` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -101,7 +101,7 @@ CREATE TABLE `orders` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Table structure for `order_items`
-CREATE TABLE `order_items` (
+CREATE TABLE IF NOT EXISTS `order_items` (
   `order_item_id` int(11) NOT NULL AUTO_INCREMENT,
   `order_id` int(11) DEFAULT NULL,
   `item_id` int(11) DEFAULT NULL,
@@ -114,7 +114,7 @@ CREATE TABLE `order_items` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Table structure for `order_status`
-CREATE TABLE `order_status` (
+CREATE TABLE IF NOT EXISTS `order_status` (
   `status_id` int(11) NOT NULL AUTO_INCREMENT,
   `status_name` varchar(50) NOT NULL,
   PRIMARY KEY (`status_id`),
@@ -122,7 +122,7 @@ CREATE TABLE `order_status` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Table structure for `purchase_history`
-CREATE TABLE `purchase_history` (
+CREATE TABLE IF NOT EXISTS `purchase_history` (
   `history_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) DEFAULT NULL,
   `item_id` int(11) DEFAULT NULL,
@@ -137,7 +137,7 @@ CREATE TABLE `purchase_history` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Table structure for `roles`
-CREATE TABLE `roles` (
+CREATE TABLE IF NOT EXISTS `roles` (
   `role_id` int(11) NOT NULL AUTO_INCREMENT,
   `role_name` varchar(50) NOT NULL,
   `role_description` text DEFAULT NULL,
@@ -146,7 +146,7 @@ CREATE TABLE `roles` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Table structure for `users`
-CREATE TABLE `users` (
+CREATE TABLE IF NOT EXISTS `users` (
   `user_id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
