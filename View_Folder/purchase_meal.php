@@ -3,8 +3,8 @@ session_start();
 
 // Database Connection
 $host = "localhost";
-$user = "phpmyadmin";
-$password = "P2litmaG";
+$user = "root";
+$password = "";
 $dbname = "ashesismartdiner";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
