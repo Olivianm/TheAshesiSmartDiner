@@ -1,0 +1,142 @@
+<?php
+session_start();
+require './../Setting_Folder/connection.php';
+
+// Ensure user is admin
+if (!isset($_SESSION['user_id']) || $_SESSION['role_id'] != 1) {
+    die("Unauthorized access.");
+}
+
+// Handle status update (Approve/Reject)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['payment_id'], $_POST['new_status'])) {
+    $payment_id = $_POST['payment_id'];
+    $new_status = $_POST['new_status'];
+
+    $stmt = $connection->prepare("UPDATE payment_confirmations SET status = ? WHERE id = ?");
+    $stmt->bind_param("si", $new_status, $payment_id);
+    $stmt->execute();
+    $stmt->close();
+
+    header("Location: admin_payments.php");
+    exit();
+}
+
+// Handle export
+if (isset($_GET['export']) && $_GET['export'] === 'csv') {
+    header('Content-Type: text/csv');
+    header('Content-Disposition: attachment;filename=payments_export.csv');
+
+    $output = fopen('php://output', 'w');
+    fputcsv($output, ['Payer Name', 'Transaction ID', 'Amount', 'Network', 'Status', 'Confirmation Time']);
+
+    $result = $connection->query("SELECT u.name, pc.transaction_id, pc.amount, pc.network_provider, pc.status, pc.confirmation_time 
+                                  FROM payment_confirmations pc
+                                  JOIN users u ON pc.user_id = u.user_id");
+    while ($row = $result->fetch_assoc()) {
+        fputcsv($output, $row);
+    }
+    fclose($output);
+    exit();
+}
+
+// Apply filters
+$filter = "";
+if (isset($_GET['filter'])) {
+    if ($_GET['filter'] === 'today') {
+        $filter = "AND DATE(pc.confirmation_time) = CURDATE()";
+    } elseif ($_GET['filter'] === 'week') {
+        $filter = "AND YEARWEEK(pc.confirmation_time, 1) = YEARWEEK(CURDATE(), 1)";
+    } elseif ($_GET['filter'] === 'month') {
+        $filter = "AND MONTH(pc.confirmation_time) = MONTH(CURDATE()) AND YEAR(pc.confirmation_time) = YEAR(CURDATE())";
+    }
+}
+
+// Fetch payments
+$query = "SELECT pc.id AS payment_id, u.name AS payer_name, pc.transaction_id, pc.amount, pc.network_provider, pc.status, pc.confirmation_time 
+          FROM payment_confirmations pc
+          JOIN users u ON pc.user_id = u.user_id
+          WHERE 1=1 $filter
+          ORDER BY pc.confirmation_time DESC";
+
+$stmt = $connection->prepare($query);
+$stmt->execute();
+$result = $stmt->get_result();
+$payments = [];
+while ($row = $result->fetch_assoc()) {
+    $payments[] = $row;
+}
+$stmt->close();
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Payment Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1000px; margin: auto; padding: 20px; }
+        h2 { text-align: center; color: #722F37; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #722F37; color: white; }
+        tr:hover { background-color: #f5f5f5; }
+        .status-pending { color: orange; }
+        .status-completed { color: green; }
+        .status-failed { color: red; }
+        .action-btn { margin-right: 5px; }
+        .filter-bar { margin-bottom: 20px; text-align: center; }
+        .filter-bar a, .filter-bar form { margin: 0 10px; display: inline-block; }
+    </style>
+</head>
+<body>
+    <h2>Admin Payment Management</h2>
+
+    <div class="filter-bar">
+        <strong>Filter by:</strong>
+        <a href="?filter=today">Today</a>
+        <a href="?filter=week">This Week</a>
+        <a href="?filter=month">This Month</a>
+        <a href="admin_payments.php">All</a> |
+        <a href="?export=csv">Export as CSV</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Payer Name</th>
+                <th>Transaction ID</th>
+                <th>Amount</th>
+                <th>Network</th>
+                <th>Status</th>
+                <th>Confirmation Time</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (count($payments) > 0): ?>
+                <?php foreach ($payments as $payment): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($payment['payer_name']) ?></td>
+                        <td><?= htmlspecialchars($payment['transaction_id']) ?></td>
+                        <td>GHS <?= number_format($payment['amount'], 2) ?></td>
+                        <td><?= htmlspecialchars($payment['network_provider']) ?></td>
+                        <td class="status-<?= strtolower($payment['status']) ?>">
+                            <?= htmlspecialchars($payment['status']) ?>
+                        </td>
+                        <td><?= htmlspecialchars($payment['confirmation_time']) ?></td>
+                        <td>
+                            <form method="post" style="display:inline;">
+                                <input type="hidden" name="payment_id" value="<?= $payment['payment_id'] ?>">
+                                <button class="action-btn" name="new_status" value="Completed">Approve</button>
+                                <button class="action-btn" name="new_status" value="Failed">Reject</button>
+                            </form>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <tr><td colspan="7" style="text-align:center;">No payments found.</td></tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
+</body>
+</html>

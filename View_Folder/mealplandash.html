@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Meal Plan Dashboard</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+
+<body class="bg-light">
+  <!-- Header -->
+  <header>
+    <h1 class="text-center">Meal Plan Dashboard</h1>
+  </header>
+
+  <!-- Dashboard Section -->
+  <section class="container my-5">
+    <h2 class="text-center mb-4">Check Your Meal Plan Balance</h2>
+
+    <!-- Input Form -->
+    <div class="balance-check-form">
+      <label for="student-id">Enter Your ID Number:</label>
+      <input type="text" id="student-id" class="form-control mb-3" placeholder="e.g., 12345678">
+      <button id="check-balance-btn" class="btn btn-primary">Check Balance</button>
+    </div>
+
+    <!-- Balance Display -->
+    <div id="balance-result" class="balance-result hidden">
+      <h3>Balance Information</h3>
+      <p><strong>ID:</strong> <span id="display-id"></span></p>
+      <p><strong>Balance:</strong> $<span id="display-balance"></span></p>
+    </div>
+
+    <!-- Error Message -->
+    <div id="error-message" class="error-message hidden">
+      <p>Student ID not found. Please try again.</p>
+    </div>
+  </section>
+
+  <!-- JavaScript -->
+  <script>
+    // Mock Data for Students' Balances
+    const studentBalances = {
+      "12345678": 50.00,
+      "87654321": 30.50,
+      "11223344": 75.25
+    };
+
+    // Elements
+    const checkBalanceBtn = document.getElementById('check-balance-btn');
+    const studentIdInput = document.getElementById('student-id');
+    const balanceResult = document.getElementById('balance-result');
+    const displayId = document.getElementById('display-id');
+    const displayBalance = document.getElementById('display-balance');
+    const errorMessage = document.getElementById('error-message');
+
+    // Check Balance Button Click Event
+    checkBalanceBtn.addEventListener('click', () => {
+      const studentId = studentIdInput.value.trim();
+
+      if (studentBalances.hasOwnProperty(studentId)) {
+        // If ID exists, display the balance
+        displayId.textContent = studentId;
+        displayBalance.textContent = studentBalances[studentId].toFixed(2);
+        balanceResult.classList.remove('hidden');
+        errorMessage.classList.add('hidden');
+      } else {
+        // If ID does not exist, show an error
+        balanceResult.classList.add('hidden');
+        errorMessage.classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+
+</html>
