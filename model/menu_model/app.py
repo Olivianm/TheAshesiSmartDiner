@@ -11,13 +11,13 @@ CORS(app)
 
 # Load models
 try:
-    with open(r'C:/xampp/htdocs/AshesiSmartDiner/model/menu_model/hallmark_model.pkl', 'rb') as f:
+    with open(r'hallmark_model.pkl', 'rb') as f:
         hallmark_model, hallmark_scaler, hallmark_encoder, hallmark_label_encoders = pickle.load(f)
 
-    with open(r'C:/xampp/htdocs/AshesiSmartDiner/model/menu_model/akorno_model.pkl', 'rb') as f:
+    with open(r'akorno_model.pkl', 'rb') as f:
         akorno_model, akorno_scaler, akorno_encoder, akorno_label_encoders = pickle.load(f)
 
-    with open(r'C:/xampp/htdocs/AshesiSmartDiner/model/menu_model/munchies_model.pkl', 'rb') as f:
+    with open(r'munchies_model.pkl', 'rb') as f:
         munchies_model, munchies_scaler, munchies_encoder, munchies_label_encoders = pickle.load(f)
 
 except FileNotFoundError:
