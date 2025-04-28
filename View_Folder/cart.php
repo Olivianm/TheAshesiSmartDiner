@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 session_start();
 require './../Setting_Folder/connection.php';
 
@@ -34,30 +37,87 @@ $stmt->close();
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delivery_option'])) {
-    $deliveryOption = $_POST['delivery_option'];
-    $status = 'Pending';
-    $pickup = ($deliveryOption === 'pickup') ? 1 : 0;
+    $deliveryOption = preg_replace('/[^a-z]/', '', strtolower($_POST['delivery_option']));
+    if (!in_array($deliveryOption, ['pickup', 'delivery'])) {
+        die("Invalid delivery option selected");
+    }
 
-    // Insert order
-    $stmt = $connection->prepare("INSERT INTO orders (user_id, order_date, total_price, status, pickup, delivery_option, total_amount) VALUES (?, NOW(), ?, ?, ?, ?, ?)");
-    $stmt->bind_param("idssis", $userId, $totalAmount, $status, $pickup, $deliveryOption, $totalAmount);
-    $stmt->execute();
+    $status = 'Pending';
+$pickup = ($deliveryOption === 'pickup') ? 1 : 0;
+$totalAmountWithFees = $totalAmount;  
+$totalAmount = (float) $totalAmount;
+$reference = 'REF' . time() . rand(1000, 9999);
+
+$stmt = $connection->prepare("
+    INSERT INTO orders (
+        user_id, order_date, total_price, 
+        status, pickup, delivery_option, 
+        total_amount,
+        reference
+    ) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?)
+");
+
+
+if (!$stmt) {
+    die("Prepare failed: " . $connection->error);
+}
+
+$stmt->bind_param("idsisds", 
+    $userId, 
+    $totalAmount, 
+    $status, 
+    $pickup, 
+    $deliveryOption, 
+    $totalAmountWithFees,
+    $reference
+);
+
+
+if (!$stmt->execute()) {
+    error_log("Delivery option value: " . $deliveryOption);
+    error_log("SQL Error: " . $stmt->error);
+    die("Order failed: " . $stmt->error);
+}
+
 
     $orderId = $stmt->insert_id;
     $stmt->close();
 
-    // Redirect to payment page with order ID
+    // Insert order items
+    foreach ($cartItems as $item) {
+        $itemStmt = $connection->prepare("
+            INSERT INTO order_items (order_id, item_id, user_id, quantity, sub_total) 
+            VALUES (?, ?, ?, ?, ?)
+        ");
+        if (!$itemStmt) {
+            die("Prepare failed: " . $connection->error);
+        }
+        $subTotal = $item['price'] * $item['quantity'];
+        $itemStmt->bind_param("iiiid", $orderId, $item['item_id'], $userId, $item['quantity'], $subTotal);
+        $itemStmt->execute();
+        $itemStmt->close();
+    }
+
+    // Clear cart
+    $deleteCart = $connection->prepare("DELETE FROM cart WHERE user_id = ?");
+    if (!$deleteCart) {
+        die("Prepare failed: " . $connection->error);
+    }
+    $deleteCart->bind_param("i", $userId);
+    $deleteCart->execute();
+    $deleteCart->close();
+
+    // Redirect to payment
     header("Location: mobilepay.php?order_id=$orderId");
     exit();
 }
 ?>
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Your Cart</title>
   <link href="./../assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -116,6 +176,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delivery_option'])) {
       margin-top: 20px;
       font-size: 1.1rem;
       width: 100%;
+      border: none;
     }
     .remove-btn {
       background-color: #dc3545;
@@ -135,32 +196,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delivery_option'])) {
   </style>
 </head>
 <body>
+
 <a href="studentHome.php" class="btn btn-outline-primary btn-lg m-4" style="color: #722F37">
-        <i class="bi bi-eqarrow-left"></i> Back
-    </a> 
-  <div class="container" style="text-align:center">
+    <i class="bi bi-arrow-left"></i> Back
+</a> 
+
+<div class="container" style="text-align:center">
     <h2>Your Cart</h2>
 
     <?php if (count($cartItems) > 0): ?>
       <div class="cart-items">
         <?php foreach ($cartItems as $item): ?>
           <div class="cart-item">
-            <img src="./../img/menu-<?php echo $item['item_id']; ?>.jpg" alt="<?php echo $item['item_name']; ?>">
+            <img src="./../img/menu-<?php echo (int)$item['item_id']; ?>.jpg" alt="<?php echo htmlspecialchars($item['item_name']); ?>">
             <div class="cart-item-details">
-              <h5><?php echo $item['item_name']; ?></h5>
-              <p><?php echo $item['description']; ?></p>
-              <h5 class="price">GHC <?php echo $item['price']; ?></h5>
+              <h5><?php echo htmlspecialchars($item['item_name']); ?></h5>
+              <p><?php echo htmlspecialchars($item['description']); ?></p>
+              <h5 class="price">GHC <?php echo number_format($item['price'], 2); ?></h5>
               <label>Quantity:</label>
-              <input type="number" class="quantity-input" data-cart-id="<?php echo $item['cart_id']; ?>" value="<?php echo $item['quantity']; ?>" min="1">
+              <input type="number" class="quantity-input" data-cart-id="<?php echo (int)$item['cart_id']; ?>" value="<?php echo (int)$item['quantity']; ?>" min="1">
             </div>
-            <button class="remove-btn" data-cart-id="<?php echo $item['cart_id']; ?>">Remove</button>
+            <button class="remove-btn" data-cart-id="<?php echo (int)$item['cart_id']; ?>">Remove</button>
           </div>
         <?php endforeach; ?>
       </div>
 
       <!-- Delivery Option Form -->
-      <form  method="POST">
+      <form method="POST">
         <h4>Select Delivery Option:</h4>
+
         <label>
           <input type="radio" name="delivery_option" value="pickup" required> Pickup
         </label>
@@ -174,38 +238,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delivery_option'])) {
     <?php else: ?>
       <p class="empty-cart-message">Your cart is currently empty. Start shopping now!</p>
     <?php endif; ?>
-  </div>
+</div>
 
-  <script>
-    $(document).ready(function () {
-        // Remove item from cart
-        $(".remove-btn").click(function () {
-            let cartId = $(this).data("cart-id");
+<script>
+$(document).ready(function () {
+    // Remove item from cart
+    $(".remove-btn").click(function () {
+        if (!confirm("Are you sure you want to remove this item?")) return;
 
-            $.post("remove_from_cart.php", { cart_id: cartId }, function (response) {
-                let data = JSON.parse(response);
-                if (data.success) {
-                    alert("Item removed from cart!");
-                    location.reload();
-                } else {
-                    alert("Failed to remove item from cart: " + data.message);
-                }
-            });
-        });
+        let cartId = $(this).data("cart-id");
 
-        // Update quantity in cart
-        $(".quantity-input").change(function () {
-            let cartId = $(this).data("cart-id");
-            let newQuantity = $(this).val();
-
-            $.post("update_quantity.php", { cart_id: cartId, quantity: newQuantity }, function (response) {
-                let data = JSON.parse(response);
-                if (!data.success) {
-                    alert("Failed to update quantity: " + data.message);
-                }
-            });
+        $.post("remove_from_cart.php", { cart_id: cartId }, function (response) {
+            let data = JSON.parse(response);
+            if (data.success) {
+                alert("Item removed from cart!");
+                location.reload();
+            } else {
+                alert("Failed to remove item: " + data.message);
+            }
+        }).fail(function () {
+            alert("Network error. Please try again.");
         });
     });
-  </script>
+
+    // Update quantity in cart
+    $(".quantity-input").change(function () {
+        let cartId = $(this).data("cart-id");
+        let newQuantity = $(this).val();
+
+        $.post("update_quantity.php", { cart_id: cartId, quantity: newQuantity }, function (response) {
+            let data = JSON.parse(response);
+            if (!data.success) {
+                alert("Failed to update quantity: " + data.message);
+            }
+        }).fail(function () {
+            alert("Network error while updating quantity.");
+        });
+    });
+});
+</script>
+
 </body>
 </html>

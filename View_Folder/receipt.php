@@ -1,4 +1,9 @@
 <?php
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+
 session_start();
 require './../Setting_Folder/connection.php';
 
@@ -45,7 +50,11 @@ if (!$receiptExists) {
     ";
     $stmt = $connection->prepare($insertQuery);
     $stmt->bind_param("iisiss", $orderId, $userId, $order['reference'], $order['total_amount'], $order['status'], $order['order_date']);
-    $stmt->execute();
+    if ($stmt->execute()) {
+        echo "Receipt saved successfully.";
+    } else {
+        die("Error saving receipt: " . $stmt->error);
+    }
     $stmt->close();
 }
 
@@ -117,16 +126,20 @@ $stmt->close();
                 receiptContent += "- <?php echo htmlspecialchars($item['item_name']); ?> (x<?php echo $item['quantity']; ?>) - GHC <?php echo number_format($item['price'], 2); ?>\n";
             <?php endforeach; ?>
 
-            navigator.clipboard.writeText(receiptContent).then(() => {
-                alert("Receipt copied!");
-                finishTransaction();
-            }).catch(err => {
-                console.error("Failed to copy: ", err);
-            });
+            // Copy to clipboard with error handling
+            navigator.clipboard.writeText(receiptContent)
+                .then(() => {
+                    alert("Receipt copied!");
+                    finishTransaction();
+                })
+                .catch(err => {
+                    alert("Failed to copy the receipt: " + err);
+                    console.error("Error: ", err);
+                });
         }
 
         function finishTransaction() {
-            window.location.href = "purchase_meal.php";
+            window.location.href = "purchase_meal.php"; // Make sure this page exists
         }
     </script>
 </body>

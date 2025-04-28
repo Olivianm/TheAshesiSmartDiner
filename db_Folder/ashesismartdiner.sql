@@ -89,12 +89,12 @@ CREATE TABLE IF NOT EXISTS `orders` (
   `order_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) DEFAULT NULL,
   `order_date` timestamp NOT NULL DEFAULT current_timestamp(),
-  `total_price` decimal(8,2) DEFAULT NULL,
+  `subtotal` decimal(10,2) NOT NULL COMMENT 'Sum of item prices',
+  `delivery_fee` decimal(8,2) DEFAULT 0.00 COMMENT 'Added if delivery',
+  `total_amount` decimal(10,2) NOT NULL COMMENT 'subtotal + delivery_fee',
   `status` varchar(20) DEFAULT 'Pending',
-  `pickup` tinyint(1) DEFAULT 0,
-  `delivery_option` enum('pickup','delivery') NOT NULL,
+  `delivery_option` enum('pickup','delivery') NOT NULL DEFAULT 'delivery',
   `transaction_id` varchar(255) DEFAULT NULL,
-  `total_amount` decimal(10,2) NOT NULL,
   `reference` varchar(255) NOT NULL,
   PRIMARY KEY (`order_id`),
   KEY `user_id` (`user_id`)
@@ -158,5 +158,31 @@ CREATE TABLE IF NOT EXISTS `users` (
   UNIQUE KEY `email` (`email`),
   KEY `role_id` (`role_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE payment_confirmations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    network_provider VARCHAR(50),
+    transaction_id VARCHAR(255) UNIQUE,
+    amount DECIMAL(10, 2),
+    status VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE receipts (
+    receipt_id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    user_id INT NOT NULL,
+    reference VARCHAR(255) NOT NULL,
+    total_amount DECIMAL(10, 2) NOT NULL,
+    status VARCHAR(100) NOT NULL,
+    order_date DATETIME NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+
 
 COMMIT;

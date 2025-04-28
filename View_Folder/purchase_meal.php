@@ -1,5 +1,10 @@
 <?php
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 session_start();
+
 
 // Database Connection
 $host = "localhost";
@@ -7,7 +12,7 @@ $user = "phpmyadmin";
 $password = "P2litmaG";
 $dbname = "ashesismartdiner";
 
-$conn = new mysqli($servername, $username, $password, $dbname);
+$conn = new mysqli($host, $user, $password, $dbname);
 
 // Check connection
 if ($conn->connect_error) {

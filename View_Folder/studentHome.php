@@ -23,7 +23,7 @@ $stmt->fetch();
 $stmt->close();
 
 // Set a default profile image if none exists
-$profile_image = $profile_image ? "./../uploads/" . $profile_image : "./../uploads/1738286631_Nshimiyimana Oliver Mushimiyemungu2.JPG";
+$profile_image = $profile_image ? "./../uploads/" . $profile_image : "./../uploads/defaultpp.png";
 
 // Handle profile picture upload
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profileImage'])) {

@@ -8,8 +8,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role_id'] != 1) {
 }
 
 // Handle status update (Approve/Reject)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['payment_id'], $_POST['new_status'])) {
-    $payment_id = $_POST['payment_id'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'], $_POST['new_status'])) {
+    $payment_id = $_POST['id'];
     $new_status = $_POST['new_status'];
 
     $stmt = $connection->prepare("UPDATE payment_confirmations SET status = ? WHERE id = ?");
@@ -29,7 +29,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     $output = fopen('php://output', 'w');
     fputcsv($output, ['Payer Name', 'Transaction ID', 'Amount', 'Network', 'Status', 'Confirmation Time']);
 
-    $result = $connection->query("SELECT u.name, pc.transaction_id, pc.amount, pc.network_provider, pc.status, pc.confirmation_time 
+    $result = $connection->query("SELECT u.name, pc.transaction_id, pc.amount, pc.network_provider, pc.status, pc.created_at 
                                   FROM payment_confirmations pc
                                   JOIN users u ON pc.user_id = u.user_id");
     while ($row = $result->fetch_assoc()) {
@@ -43,20 +43,20 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
 $filter = "";
 if (isset($_GET['filter'])) {
     if ($_GET['filter'] === 'today') {
-        $filter = "AND DATE(pc.confirmation_time) = CURDATE()";
+        $filter = "AND DATE(pc.created_at) = CURDATE()";
     } elseif ($_GET['filter'] === 'week') {
-        $filter = "AND YEARWEEK(pc.confirmation_time, 1) = YEARWEEK(CURDATE(), 1)";
+        $filter = "AND YEARWEEK(pc.created_at, 1) = YEARWEEK(CURDATE(), 1)";
     } elseif ($_GET['filter'] === 'month') {
-        $filter = "AND MONTH(pc.confirmation_time) = MONTH(CURDATE()) AND YEAR(pc.confirmation_time) = YEAR(CURDATE())";
+        $filter = "AND MONTH(pc.created_at) = MONTH(CURDATE()) AND YEAR(pc.created_at) = YEAR(CURDATE())";
     }
 }
 
 // Fetch payments
-$query = "SELECT pc.id AS payment_id, u.name AS payer_name, pc.transaction_id, pc.amount, pc.network_provider, pc.status, pc.confirmation_time 
+$query = "SELECT pc.id AS payment_id, u.name AS payer_name, pc.transaction_id, pc.amount, pc.network_provider, pc.status, pc.created_at 
           FROM payment_confirmations pc
           JOIN users u ON pc.user_id = u.user_id
           WHERE 1=1 $filter
-          ORDER BY pc.confirmation_time DESC";
+          ORDER BY pc.created_at DESC";
 
 $stmt = $connection->prepare($query);
 $stmt->execute();
@@ -123,7 +123,7 @@ $stmt->close();
                         <td class="status-<?= strtolower($payment['status']) ?>">
                             <?= htmlspecialchars($payment['status']) ?>
                         </td>
-                        <td><?= htmlspecialchars($payment['confirmation_time']) ?></td>
+                        <td><?= htmlspecialchars($payment['created_at']) ?></td>
                         <td>
                             <form method="post" style="display:inline;">
                                 <input type="hidden" name="payment_id" value="<?= $payment['payment_id'] ?>">
