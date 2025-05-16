@@ -11,9 +11,9 @@ $user_id = $_SESSION['user_id'];
 
 // Fetch the latest order for the user
 $orderQuery = "
-    SELECT total_amount, status, order_id
+    SELECT order_id
     FROM orders
-    WHERE user_id = ?
+    WHERE user_id = ? 
     ORDER BY order_date DESC
     LIMIT 1
 ";
@@ -28,8 +28,20 @@ if (!$order) {
     die("No recent orders found.");
 }
 
-$total_amount = $order['total_amount'];
 $order_id = $order['order_id'];
+
+// Fetch the order items and calculate total amount (sub_total * quantity)
+$totalAmountQuery = "
+    SELECT SUM(oi.sub_total * oi.quantity) AS total_amount
+    FROM order_items oi
+    WHERE oi.order_id = ?
+";
+$stmt = $connection->prepare($totalAmountQuery);
+$stmt->bind_param("i", $order_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$totalAmount = $result->fetch_assoc()['total_amount'];
+$stmt->close();
 
 // Handle AJAX payment confirmation
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -96,7 +108,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <h2>How to Make a Payment</h2>
 <div class="instructions">
     <p><strong>MTN Users:</strong> Dial <code>*170#</code> → Pay Bill → General Payment</p>
-    <p><strong>Amount:</strong> GHS <?php echo number_format($total_amount, 2); ?></p>
+    <p><strong>Amount:</strong> GHS <?php echo number_format($totalAmount, 2); ?></p>
     <p><strong>Merchant Name:</strong> SmartDiner</p>
 </div>
 
@@ -111,7 +123,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <option value="AirtelTigo">AirtelTigo</option>
     </select>
 
-    <input type="hidden" name="amount" id="amount" value="<?php echo $total_amount * 100; ?>"> <!-- Paystack uses pesewas -->
+    <input type="hidden" name="amount" id="amount" value="<?php echo $totalAmount * 100; ?>"> <!-- Paystack uses pesewas -->
     <input type="hidden" name="transaction_id" id="transaction_id">
 
     <button type="submit" id="paystackBtn">Pay with Paystack</button>

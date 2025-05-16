@@ -5,7 +5,7 @@ session_start();
 // Database connection
 $host = "localhost";
 $user = "phpmyadmin";
-$password = "P2litmaG";
+$password = "P2litmaG@25";
 $dbname = "ashesismartdiner";
 
 $conn = new mysqli($host, $user, $password, $dbname);

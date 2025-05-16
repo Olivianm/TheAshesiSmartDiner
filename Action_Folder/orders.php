@@ -15,18 +15,33 @@ $result = $stmt->get_result();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Orders</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .btn-outline-wine {
+            color: #722F37;
+            border-color: #722F37;
+        }
+        .btn-outline-wine:hover {
+            background-color: #722F37;
+            color: white;
+        }
+        .back-button-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+    </style>
 </head>
 
 <body>
+    <!-- Fixed Back Button -->
+    <div class="back-button-container">
+        <a href="./../View_Folder/admin_dashboard.php" class="btn btn-outline-wine">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
 
-
-    <div class="container mt-5">
-
-    
-    <a href="./../View_Folder/admin_dashboard.php" class="btn btn-outline-primary btn-lg m-4" style="color: #722F37">
-          <i class="bi bi-arrow-left"></i> Back
-      </a>
-      
+    <div class="container mt-5" style="padding-top: 60px;"> <!-- Added padding to account for fixed button -->
         <h2 class="mb-4">Manage Orders</h2>
         <?php if ($result->num_rows > 0): ?>
         <table class="table table-bordered table-hover">
@@ -66,5 +81,8 @@ $result = $stmt->get_result();
             <p class="text-center">No orders found.</p>
         <?php endif; ?>
     </div>
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
 </body>
 </html>

@@ -44,11 +44,13 @@
     </style>
 </head>
 <body>
+    
+    
     <div class="container">
         <h1 class="text-center">Meal Prediction</h1>
         <p class="text-center text-muted">Select a cafeteria, day, and meal period to predict the most likely product.</p>
 
-        <form id="prediction-form" action="/model/menu_model/predict" method="POST">
+        <form id="prediction-form">
             <div class="form-group">
                 <label for="cafeteria"><strong>Cafeteria</strong></label>
                 <select name="cafeteria" class="form-control" id="cafeteria" required>
@@ -99,15 +101,23 @@
                 $("#prediction-output, #error-output").hide().empty();
                 
                 // Show loading state
-                const submitBtn = $(this).find("button[type='submit']");
+            const submitBtn = $(this).find("button[type='submit']");
                 submitBtn.prop('disabled', true).html(
                     '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Predicting...'
                 );
 
+                // Collect form data and convert to JSON
+                const formData = {
+                    cafreteria: $("#cafeteria").val(), // Note: Corrected to 'cafreteria' to match API expectation
+                    day_of_week: $("#day_of_week").val(),
+                    meal_period: $("#meal_period").val()
+                };
+
                 $.ajax({
-                    url: "/predict",
+                    url: "https://menu-model-api.onrender.com/predict",
                     type: "POST",
-                    data: $(this).serialize(),
+                    contentType: "application/json",
+                    data: JSON.stringify(formData),
                     dataType: "json",
                     success: function(response) {
                         submitBtn.prop('disabled', false).text('Predict Meal');

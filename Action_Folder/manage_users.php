@@ -52,12 +52,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .navbar, .main-sidebar { background-color: #800000 !important; }
+        .navbar, .main-sidebar { background-color: #722F37 !important; }
         .brand-link, .nav-link { color: white !important; }
         .table th, .table td { text-align: center; }
     </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
+
+    
+    <!-- Back to Dashboard Button -->
+    <a href="./../View_Folder/admin_dashboard.php" class="btn btn-outline-primary btn-lg position-absolute m-4">
+        <i class="bi bi-arrow-left"></i> Back
+    </a>
+    
 
 <div class="wrapper">
     <!-- Navbar -->
@@ -93,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <section class="content">
             <div class="container-fluid">
                 <div class="card">
-                    <div class="card-header" style="background-color: #800000; color: white;">
+                    <div class="card-header" style="background-color: #722F37; color: white;">
                         <h3 class="card-title">User Management</h3>
                     </div>
                     <div class="card-body">

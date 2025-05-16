@@ -82,10 +82,38 @@ if (isset($_GET['delete_item'])) {
 
     <!-- Template Stylesheet -->
     <link href="./../CSS_Folder/css/style.css" rel="stylesheet">
+    
+    <style>
+        .btn-wine {
+            background-color: #722F37;
+            border-color: #722F37;
+            color: white;
+        }
+        .btn-wine:hover {
+            background-color: #5a252c;
+            border-color: #5a252c;
+            color: white;
+        }
+        .btn-outline-wine {
+            color: #722F37;
+            border-color: #722F37;
+        }
+        .btn-outline-wine:hover {
+            background-color: #722F37;
+            color: white;
+        }
+    </style>
 </head>
 
 <body>
     <div class="container-xxl bg-white p-0">
+        <!-- Back to Dashboard Button - Fixed Position -->
+        <div class="position-absolute p-4">
+            <a href="./../View_Folder/admin_dashboard.php" class="btn btn-outline-wine">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+        </div>
+        
         <!-- Menu Start -->
         <div class="container-xxl py-5">
             <div class="container">
@@ -133,7 +161,7 @@ if (isset($_GET['delete_item'])) {
                             <option value="3">Dinner</option>
                         </select>
                     </div>
-                    <button type="submit" name="add_item" class="btn btn-primary">Add Item</button>
+                    <button type="submit" name="add_item" class="btn btn-wine">Add Item</button>
                 </form>
 
                 <!-- List All Items -->
@@ -169,8 +197,7 @@ if (isset($_GET['delete_item'])) {
                                         <td>" . $row['category_name'] . "</td>
                                         <td>
                                             <a href='?delete_item=" . $row['item_id'] . "' class='btn btn-danger btn-sm'>Delete</a>
-                                            <a href='update_item.php?item_id=" . $row['item_id'] . "' class='btn btn-success btn-sm'>Update</a>
-                                            
+                                            <a href='update_item.php?item_id=" . $row['item_id'] . "' class='btn btn-wine btn-sm'>Update</a>
                                         </td>
                                     </tr>";
                             }
@@ -185,7 +212,7 @@ if (isset($_GET['delete_item'])) {
         <!-- Menu End -->
 
         <!-- Back to Top -->
-        <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+        <a href="#" class="btn btn-lg btn-wine btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
     </div>
 
     <!-- JavaScript Libraries -->

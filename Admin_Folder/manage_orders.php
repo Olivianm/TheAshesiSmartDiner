@@ -61,6 +61,12 @@ $connection->close();
 </head>
 
 <body>
+
+ <!-- Back to Dashboard Button -->
+    <a href="./../View_Folder/admin_dashboard.php" class="btn btn-outline-primary btn-lg position-absolute m-4">
+        <i class="bi bi-arrow-left"></i> Back
+    </a>
+    
     <header class="header text-center">
         <div class="profile-img">
             <img id="profileImage" src="<?php echo htmlspecialchars($profile_image) . '?t=' . time(); ?>" alt="Profile Picture">

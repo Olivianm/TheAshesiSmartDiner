@@ -148,9 +148,16 @@ $connection->close();
 </head>
 
 <body>
-    
+
 
     <main class="main">
+
+        
+        <!-- Back to Dashboard Button -->
+        <a href="./../View_Folder/admin_dashboard.php" class="btn btn-outline-primary btn-lg position-absolute m-4">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    
         <h1 class="text-center">Admin Dashboard</h1>
         <section class="section">
             <h4>Manage Menu</h4>

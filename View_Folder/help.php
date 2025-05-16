@@ -89,6 +89,11 @@ $stmt->close();
 </head>
 <body>
 
+ <!-- Back to Dashboard Button -->
+<a href="./../View_Folder/studentHome.php" class="btn btn-outline-primary btn-lg position-absolute m-4">
+    <i class="bi bi-arrow-left"></i> Back
+</a>
+
   <div class="container">
     <h1>Help Center</h1>
 

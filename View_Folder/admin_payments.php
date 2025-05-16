@@ -8,8 +8,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role_id'] != 1) {
 }
 
 // Handle status update (Approve/Reject)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'], $_POST['new_status'])) {
-    $payment_id = $_POST['id'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['payment_id'], $_POST['new_status'])) {
+    $payment_id = $_POST['payment_id'];
     $new_status = $_POST['new_status'];
 
     $stmt = $connection->prepare("UPDATE payment_confirmations SET status = ? WHERE id = ?");
@@ -73,8 +73,16 @@ $stmt->close();
 <head>
     <meta charset="UTF-8">
     <title>Admin Payment Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
     <style>
-        body { font-family: Arial, sans-serif; max-width: 1000px; margin: auto; padding: 20px; }
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 1000px; 
+            margin: auto; 
+            padding: 20px;
+            padding-top: 70px; /* Added for fixed back button */
+        }
         h2 { text-align: center; color: #722F37; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
@@ -83,12 +91,41 @@ $stmt->close();
         .status-pending { color: orange; }
         .status-completed { color: green; }
         .status-failed { color: red; }
-        .action-btn { margin-right: 5px; }
+        .action-btn { 
+            margin-right: 5px; 
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .approve-btn { background-color: #28a745; color: white; }
+        .reject-btn { background-color: #dc3545; color: white; }
         .filter-bar { margin-bottom: 20px; text-align: center; }
         .filter-bar a, .filter-bar form { margin: 0 10px; display: inline-block; }
+        .btn-outline-wine {
+            color: #722F37;
+            border-color: #722F37;
+        }
+        .btn-outline-wine:hover {
+            background-color: #722F37;
+            color: white;
+        }
+        .back-button-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
+    <!-- Fixed Back Button -->
+    <div class="back-button-container">
+        <a href="./../View_Folder/admin_dashboard.php" class="btn btn-outline-wine">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
     <h2>Admin Payment Management</h2>
 
     <div class="filter-bar">
@@ -127,8 +164,8 @@ $stmt->close();
                         <td>
                             <form method="post" style="display:inline;">
                                 <input type="hidden" name="payment_id" value="<?= $payment['payment_id'] ?>">
-                                <button class="action-btn" name="new_status" value="Completed">Approve</button>
-                                <button class="action-btn" name="new_status" value="Failed">Reject</button>
+                                <button class="action-btn approve-btn" name="new_status" value="Completed">Approve</button>
+                                <button class="action-btn reject-btn" name="new_status" value="Failed">Reject</button>
                             </form>
                         </td>
                     </tr>

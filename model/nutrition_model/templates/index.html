@@ -78,7 +78,8 @@
         function getNutrition() {
             const foodName = document.getElementById('food').value;
 
-            fetch('/predict', {
+            fetch('http://172.16.3.204:5001/predict', {
+
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

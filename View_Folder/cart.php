@@ -43,42 +43,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delivery_option'])) {
     }
 
     $status = 'Pending';
-$pickup = ($deliveryOption === 'pickup') ? 1 : 0;
-$totalAmountWithFees = $totalAmount;  
-$totalAmount = (float) $totalAmount;
-$reference = 'REF' . time() . rand(1000, 9999);
+    $pickup = ($deliveryOption === 'pickup') ? 1 : 0;
+    $totalAmountWithFees = $totalAmount;  
+    $totalAmount = (float) $totalAmount;
+    $reference = 'REF' . time() . rand(1000, 9999);
 
-$stmt = $connection->prepare("
-    INSERT INTO orders (
-        user_id, order_date, total_price, 
-        status, pickup, delivery_option, 
-        total_amount,
-        reference
-    ) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?)
-");
+    // Adjust delivery fee logic here
+    $deliveryFee = ($deliveryOption === 'delivery') ? 500 : 0; // Add a fixed fee for delivery
 
+    // Insert order into the database with correct column values
+    $stmt = $connection->prepare("
+        INSERT INTO orders (
+            user_id, order_date, subtotal,
+            delivery_fee, total_amount, 
+            delivery_option, 
+            transaction_id,
+            reference
+        ) VALUES (?, NOW(), ?, ?, ?, ?, ?, ?)
+    ");
+    if (!$stmt) {
+        die("Prepare failed: " . $connection->error);
+    }
 
-if (!$stmt) {
-    die("Prepare failed: " . $connection->error);
-}
+    $stmt->bind_param("idsisds", 
+        $userId, 
+        $totalAmount, 
+        $deliveryFee, // Fix delivery fee to be a decimal value
+        $status, 
+        $pickup, 
+        $totalAmountWithFees,
+        $reference
+    );
 
-$stmt->bind_param("idsisds", 
-    $userId, 
-    $totalAmount, 
-    $status, 
-    $pickup, 
-    $deliveryOption, 
-    $totalAmountWithFees,
-    $reference
-);
-
-
-if (!$stmt->execute()) {
-    error_log("Delivery option value: " . $deliveryOption);
-    error_log("SQL Error: " . $stmt->error);
-    die("Order failed: " . $stmt->error);
-}
-
+    if (!$stmt->execute()) {
+        error_log("Delivery option value: " . $deliveryOption);
+        error_log("SQL Error: " . $stmt->error);
+        die("Order failed: " . $stmt->error);
+    }
 
     $orderId = $stmt->insert_id;
     $stmt->close();
@@ -196,48 +197,50 @@ if (!$stmt->execute()) {
   </style>
 </head>
 <body>
+ 
 
-<a href="studentHome.php" class="btn btn-outline-primary btn-lg m-4" style="color: #722F37">
+ <!-- Back to Dashboard Button -->
+<a href="./../View_Folder/studentHome.php" class="btn btn-outline-primary btn-lg position-absolute m-4">
     <i class="bi bi-arrow-left"></i> Back
-</a> 
+</a>
 
 <div class="container" style="text-align:center">
     <h2>Your Cart</h2>
 
-    <?php if (count($cartItems) > 0): ?>
-      <div class="cart-items">
-        <?php foreach ($cartItems as $item): ?>
-          <div class="cart-item">
-            <img src="./../img/menu-<?php echo (int)$item['item_id']; ?>.jpg" alt="<?php echo htmlspecialchars($item['item_name']); ?>">
-            <div class="cart-item-details">
-              <h5><?php echo htmlspecialchars($item['item_name']); ?></h5>
-              <p><?php echo htmlspecialchars($item['description']); ?></p>
-              <h5 class="price">GHC <?php echo number_format($item['price'], 2); ?></h5>
-              <label>Quantity:</label>
-              <input type="number" class="quantity-input" data-cart-id="<?php echo (int)$item['cart_id']; ?>" value="<?php echo (int)$item['quantity']; ?>" min="1">
-            </div>
-            <button class="remove-btn" data-cart-id="<?php echo (int)$item['cart_id']; ?>">Remove</button>
-          </div>
-        <?php endforeach; ?>
+<?php if (count($cartItems) > 0): ?>
+  <div class="cart-items">
+    <?php foreach ($cartItems as $item): ?>
+      <div class="cart-item">
+        <img src="./../img/menu-<?php echo (int)$item['item_id']; ?>.jpg" alt="<?php echo htmlspecialchars($item['item_name']); ?>">
+        <div class="cart-item-details">
+          <h5><?php echo htmlspecialchars($item['item_name']); ?></h5>
+          <p><?php echo htmlspecialchars($item['description']); ?></p>
+          <h5 class="price">GHC <?php echo number_format($item['price'], 2); ?></h5>
+          <label>Quantity:</label>
+          <input type="number" class="quantity-input" data-cart-id="<?php echo (int)$item['cart_id']; ?>" value="<?php echo (int)$item['quantity']; ?>" min="1">
+        </div>
+        <button class="remove-btn" data-cart-id="<?php echo (int)$item['cart_id']; ?>">Remove</button>
       </div>
+    <?php endforeach; ?>
+  </div>
 
-      <!-- Delivery Option Form -->
-      <form method="POST">
-        <h4>Select Delivery Option:</h4>
+  <!-- Delivery Option Form -->
+  <form method="POST">
+    <h4>Select Delivery Option:</h4>
 
-        <label>
-          <input type="radio" name="delivery_option" value="pickup" required> Pickup
-        </label>
-        <label>
-          <input type="radio" name="delivery_option" value="delivery" required> Delivery
-        </label>
-        
-        <input type="submit" value="Proceed to Payment Instructions" class="checkout-btn">
-      </form>
+    <label>
+      <input type="radio" name="delivery_option" value="pickup" required> Pickup
+    </label>
+    <label>
+      <input type="radio" name="delivery_option" value="delivery" required> Delivery
+    </label>
+    
+    <input type="submit" value="Proceed to Payment Instructions" class="checkout-btn">
+  </form>
 
-    <?php else: ?>
-      <p class="empty-cart-message">Your cart is currently empty. Start shopping now!</p>
-    <?php endif; ?>
+<?php else: ?>
+  <p class="empty-cart-message">Your cart is currently empty. Start shopping now!</p>
+<?php endif; ?>
 </div>
 
 <script>
